@@ -217,6 +217,7 @@ while running:
 
     screen.fill(BLACK)
 
+    # draw board
     for i in range(game.height):
         for j in range(game.width):
             pygame.draw.rect(
@@ -233,6 +234,19 @@ while running:
                      game.zoom - 2, game.zoom - 2]
                 )
 
+    # draw next piece
+    for i in range(4):
+        for j in range(4):
+            p = i * 4 + j
+            if p in game.next_piece.image():
+                pygame.draw.rect(
+                    screen, game.next_piece.colour,
+                    [300 + game.x + game.zoom * (j + game.next_piece.x),
+                     10 + game.y + game.zoom * (i + game.next_piece.y),
+                     game.zoom - 2, game.zoom - 2]
+                )
+
+    # draw current piece
     if game.piece is not None:
         for i in range(4):
             for j in range(4):

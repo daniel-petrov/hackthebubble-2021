@@ -68,8 +68,9 @@ class Tetris:
     width = 0
     x = 100
     y = 60
-    zoom = 20
+    zoom = 30   # how big cells are
     piece = None
+    next_piece = None
 
     def __init__(self, height, width):
         self.height = height
@@ -85,7 +86,12 @@ class Tetris:
             self.field.append(new_line)
 
     def new_piece(self):
-        self.piece = Piece(3, 0)
+        if self.next_piece is not None:
+            self.piece = self.next_piece
+        else:
+            self.piece = Piece(3, 0)
+
+        self.next_piece = Piece(3, 0)
 
     def intersects(self):
         intersection = False
@@ -163,7 +169,7 @@ pygame.init()
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GRAY = (128, 128, 128)
-SIZE = (500, 600)
+SIZE = (700, 700)
 
 screen = pygame.display.set_mode(SIZE)
 pygame.display.set_caption("Tetris")
@@ -242,11 +248,12 @@ while running:
     font = pygame.font.SysFont('Calibri', 25, True, False)
     font1 = pygame.font.SysFont('Calibri', 65, True, False)
     score_text = font.render("Score: " + str(game.score), True, WHITE)
-    level_text = font.render("Level: " + str(game.level), True, WHITE)
+    piece_text = font.render("Next Piece: ", True, WHITE)
     text_game_over = font1.render("Game Over", True, (255, 125, 0))
     text_game_over1 = font1.render("Press ESC", True, (255, 215, 0))
 
     screen.blit(score_text, [0, 0])
+    screen.blit(piece_text, [450, 10])
     if game.state == "gameover":
         screen.blit(text_game_over, [20, 200])
         screen.blit(text_game_over1, [25, 265])

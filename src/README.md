@@ -15,6 +15,8 @@ Up-arrow key to rotate the piece clockwise.
 Hold the down-key to increase the speed the piece falls.
 Space bar to drop the current piece to the bottom.
 
+All music from https://downloads.khinsider.com/game-soundtracks/album/tetris-gameboy-rip.
+
 ## Pong
 
 Normal Pong (see [here](https://en.wikipedia.org/wiki/Pong)).

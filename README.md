@@ -1,4 +1,4 @@
 # hackthebubble-2021
-"Hack the Bubble" 2021 - an arcade-themed hackathon arranged by STACS (St Andrews Computing Soceity).
+"Hack the Bubble" 2021 - an arcade-themed, 12-hour hackathon arranged by STACS (St Andrews Computing Soceity).
 
-Current Direction: Teach an AI how to play Tetris (or some other arcade game).
+The initial idea was to implement an AI making use of Reinforcement Learning (Deep Q-learning) to learn how to play tetris and beat it. After suffering numerous problems with this side of the project, we just decided to write a few arcade games. 

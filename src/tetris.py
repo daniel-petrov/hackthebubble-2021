@@ -11,7 +11,6 @@ from pygame.locals import (
     QUIT,
 )
 
-
 # i-block = cyan
 # j-block = blue
 # l-block = orange
@@ -21,14 +20,15 @@ from pygame.locals import (
 # z-block = red
 
 colours = [
-        (0, 255, 255),  # i-block
-        (0, 0, 255),  # j-block
-        (255, 128, 0),  # l-block
-        (255, 255, 0),  # o-block
-        (0, 255, 0),  # s-block
-        (255, 0, 255),  # t-block
-        (255, 0, 0)  # z-block
-    ]
+    (0, 255, 255),  # i-block
+    (0, 0, 255),  # j-block
+    (255, 128, 0),  # l-block
+    (255, 255, 0),  # o-block
+    (0, 255, 0),  # s-block
+    (255, 0, 255),  # t-block
+    (255, 0, 0)  # z-block
+]
+
 
 class Piece:
     # coordinates of piece
@@ -48,15 +48,15 @@ class Piece:
     def __init__(self, x, y):
         self.x = x  # initial x coord (from top left)
         self.y = y  # initial y coord (from top left)
-        self.type = random.randint(0, len(self.figures) - 1)
-        self.colour = colours[self.type]
+        self.type = random.randint(1, len(self.figures))
+        self.colour = colours[self.type - 1]
         self.rotation = 0
 
     def image(self):
-        return self.figures[self.type][self.rotation]
+        return self.figures[self.type - 1][self.rotation]
 
     def rotate(self):
-        self.rotation = (self.rotation + 1) % len(self.figures[self.type])
+        self.rotation = (self.rotation + 1) % len(self.figures[self.type - 1])
 
 
 class Tetris:
@@ -86,17 +86,15 @@ class Tetris:
 
     def new_piece(self):
         self.piece = Piece(3, 0)
-        if self.piece.type == 0:
-            print("i-block")
 
     def intersects(self):
         intersection = False
         for i in range(4):
             for j in range(4):
                 if (i * 4 + j) in self.piece.image():
-                    if (i + self.piece.y > self.height - 1) or\
-                            (j + self.piece.x > self.width - 1) or\
-                            (j + self.piece.x < 0) or\
+                    if (i + self.piece.y > self.height - 1) or \
+                            (j + self.piece.x > self.width - 1) or \
+                            (j + self.piece.x < 0) or \
                             (self.field[i + self.piece.y][j + self.piece.x] > 0):
                         intersection = True
         return intersection
@@ -112,7 +110,7 @@ class Tetris:
                 lines += 1
                 for i1 in range(i, 1, -1):
                     for j in range(self.width):
-                        self.field[i1][j] = self.field[i1-1][j]
+                        self.field[i1][j] = self.field[i1 - 1][j]
         self.score += lines ** 2
 
     def go_down(self):
@@ -136,7 +134,7 @@ class Tetris:
         self.new_piece()
         if self.intersects():
             self.state = "gameover"
-        self.print_field()
+        # self.print_field()
 
     def go_side(self, dx):
         old_x = self.piece.x
@@ -165,21 +163,29 @@ pygame.init()
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GRAY = (128, 128, 128)
-SIZE = (400, 500)
+SIZE = (500, 600)
 
 screen = pygame.display.set_mode(SIZE)
 pygame.display.set_caption("Tetris")
 
 running = True
 clock = pygame.time.Clock()
-fps = 5
+fps = 10
 game = Tetris(20, 10)
+counter = 0
+pressing_down = False
 
+pygame.mixer.music.load("../music/tetris-gameboy-02.mp3")
+pygame.mixer.music.play(loops=-1)
 while running:
     if game.piece is None:
         game.new_piece()
+    counter += 1
+    if counter > 1000:
+        counter = 0
 
-    if (game.state == "start"):
+    if ((counter % (fps // game.level // 2) == 0) or pressing_down) and \
+            (game.state == "start"):
         game.go_down()
 
     for event in pygame.event.get():
@@ -193,23 +199,29 @@ while running:
             if event.key == pygame.K_RIGHT:
                 game.go_side(1)
             if event.key == pygame.K_SPACE:
-                game.go_space() # immediately go to bottom
+                game.go_space()  # immediately go to bottom
             if event.key == pygame.K_ESCAPE:
                 game.__init__(20, 10)
+            if event.key == pygame.K_DOWN:
+                pressing_down = True
 
-    screen.fill(WHITE)
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_DOWN:
+                pressing_down = False
+
+    screen.fill(BLACK)
 
     for i in range(game.height):
         for j in range(game.width):
             pygame.draw.rect(
                 surface=screen, color=GRAY,
                 rect=[game.x + game.zoom * j,
-                 game.y + game.zoom * i,
-                 game.zoom - 2, game.zoom - 1], width=1
+                      game.y + game.zoom * i,
+                      game.zoom - 2, game.zoom - 1], width=1
             )
             if game.field[i][j] > 0:
                 pygame.draw.rect(
-                    screen, colours[game.field[i][j]],
+                    screen, colours[game.field[i][j] - 1],
                     [game.x + game.zoom * j + 1,
                      game.y + game.zoom * i + 1,
                      game.zoom - 2, game.zoom - 2]
@@ -218,7 +230,7 @@ while running:
     if game.piece is not None:
         for i in range(4):
             for j in range(4):
-                p = i * 4 + j   # position
+                p = i * 4 + j  # position
                 if p in game.piece.image():
                     pygame.draw.rect(
                         screen, game.piece.colour,
@@ -229,11 +241,12 @@ while running:
 
     font = pygame.font.SysFont('Calibri', 25, True, False)
     font1 = pygame.font.SysFont('Calibri', 65, True, False)
-    text = font.render("Score: " + str(game.score), True, BLACK)
+    score_text = font.render("Score: " + str(game.score), True, WHITE)
+    level_text = font.render("Level: " + str(game.level), True, WHITE)
     text_game_over = font1.render("Game Over", True, (255, 125, 0))
     text_game_over1 = font1.render("Press ESC", True, (255, 215, 0))
 
-    screen.blit(text, [0,0])
+    screen.blit(score_text, [0, 0])
     if game.state == "gameover":
         screen.blit(text_game_over, [20, 200])
         screen.blit(text_game_over1, [25, 265])

@@ -19,6 +19,7 @@ pygame.init()  # initialise library
 # constants
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
+WHITE = (255, 255, 255)
 
 # variables
 x = SCREEN_WIDTH*0.12
@@ -27,6 +28,10 @@ up = K_w
 down = K_s
 BALL_SPEED_X = -5
 BALL_SPEED_Y = 0
+SPEED_MOD = 1
+P1_SCORE = 0
+P2_SCORE = 0
+BOUNCE = 0
 
 # define player which extends pygame.sprite.Sprite
 class Player(pygame.sprite.Sprite):
@@ -72,10 +77,9 @@ class Ball(pygame.sprite.Sprite):
     # move sprite based on speed, remove sprite when passed left edge of screen
     def update(self):
         global BALL_SPEED_Y
-        self.rect.move_ip(BALL_SPEED_X, BALL_SPEED_Y)
-        if self.rect.right < 0 or self.rect.left > SCREEN_WIDTH:
-            self.kill()
-            running = False
+        self.rect.move_ip(BALL_SPEED_X*SPEED_MOD, BALL_SPEED_Y *SPEED_MOD)
+            #self.kill()
+            #running = False
             #print("The Ball has been lost. GAME OVER!")
         if self.rect.top < 0 or self.rect.bottom > SCREEN_HEIGHT:
             BALL_SPEED_Y = -BALL_SPEED_Y
@@ -157,13 +161,55 @@ while running:
 
     # check if the ball has collided with either player
     if pygame.sprite.spritecollideany(ball, players):
+        
         BALL_SPEED_X = -BALL_SPEED_X
-        BALL_SPEED_Y = random.randint(-5, 5)
+        modY = random.randint(0, 1)
+        if (modY == 0):
+            modY = -0.1
+        else:
+            modY = 0.1
+        BALL_SPEED_Y = random.randint(20, 50) * modY
+        SPEED_MOD += 0.02
+        BOUNCE += 1
+        if BOUNCE >= 3:
+            BOUNCE = 1
+        
         # if so, remove player and stop loop
         #player1.kill()
         #running = False
         #print("You collided! GAME OVER!")
+
+    # ball is out of bounds
+    if ball.rect.right < 0 or ball.rect.left > SCREEN_WIDTH:
         
+        ball.kill()
+        pygame.time.delay(1000)
+        ball = Ball()
+        all_sprites.add(ball)
+        BALL_SPEED_X = -5
+        BALL_SPEED_Y = 0
+        SPEED_MOD = 1
+        
+        if BOUNCE != 0:
+            if BOUNCE == 1:
+                P1_SCORE += 1
+            else:
+                P2_SCORE += 1
+            BOUNCE = 0
+    
+    if (P1_SCORE >= 11):
+        running = False
+        print("PLAYER 1 WINS! GAME OVER!")
+    if (P2_SCORE >= 11):
+        running = False
+        print("PLAYER 2 WINS! GAME OVER!")
+    
+    font = pygame.font.SysFont('Calibri', 25, True, False)
+    p1_score = font.render(str(P1_SCORE), True, WHITE)
+    screen.blit(p1_score, [SCREEN_WIDTH*0.1,0])
+    p2_score = font.render(str(P2_SCORE), True, WHITE)
+    screen.blit(p2_score, [SCREEN_WIDTH-SCREEN_WIDTH*0.1,0])
+    
     # update display
     pygame.display.flip()
 

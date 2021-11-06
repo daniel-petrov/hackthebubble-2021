@@ -1,4 +1,4 @@
-To run any of the .py files within this `.py` files, simply enter the following on a command line:
+To run any of the `.py` files within this `src/` directory, simply enter the following on a command line:
 
 	`python3 <file>`
 

@@ -2,6 +2,7 @@ import pygame
 import random
 
 from pygame.locals import (
+    RLEACCEL,
     K_UP,
     K_DOWN,
     K_LEFT,
@@ -53,8 +54,8 @@ class Enemy(pygame.sprite.Sprite):
         super(Enemy, self).__init__()
         self.surf = pygame.Surface((20, 10))
         self.surf.fill((255, 255, 255))
-        self.rect = self.rect.get_rect(
-            centrer=(
+        self.rect = self.surf.get_rect(
+            center=(
                 random.randint(SCREEN_WIDTH+20, SCREEN_WIDTH+100),
                 random.randint(0, SCREEN_HEIGHT)
             )
@@ -71,6 +72,10 @@ class Enemy(pygame.sprite.Sprite):
 # set up drawing window
 screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
 
+# creare custom event for adding new enemy
+ADDENEMY = pygame.USEREVENT + 1 # events identified in integers, must be unique
+pygame.time.set_timer(ADDENEMY, 250)
+
 # instantiate player
 player = Player()
 
@@ -80,6 +85,9 @@ player = Player()
 enemies = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
 all_sprites.add(player)
+
+# setup clock for framerate
+clock = pygame.time.Clock()
 
 running = True
 
@@ -92,21 +100,42 @@ while running:
             # was it escape key?
             if event.key == K_ESCAPE:
                 running = False
+
         # did user click window close button?
         elif event.type == QUIT:
             running = False
+
+        # add a new enemy?
+        elif event.type == ADDENEMY:
+            # create new enemy and add it to sprite groups
+            new_enemy = Enemy()
+            enemies.add(new_enemy)
+            all_sprites.add(new_enemy)
 
     # get set of keys pressed and check for user input, then update player sprite
     pressed_keys = pygame.key.get_pressed()
     player.update(pressed_keys)
 
+    enemies.update()
+
     # fill screen with white
     screen.fill((0, 0, 0))
 
-    # draw player on screen
-    screen.blit(player.surf, player.rect)
+    # draw all sprites
+    for entity in all_sprites:
+        screen.blit(entity.surf, entity.rect)
+
+    # check if any enemies have collided with the player
+    if pygame.sprite.spritecollideany(player, enemies):
+        # if so, remove player and stop loop
+        player.kill()
+        running = False
+        print("You collided! GAME OVER!")
 
     # update display
     pygame.display.flip()
+
+    # ensure program maintains rate of 30 fps
+    clock.tick(30)
 
 pygame.quit()

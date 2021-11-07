@@ -1,5 +1,6 @@
 import pygame
 import random
+import sys
 
 from pygame.locals import (
     K_UP,
@@ -181,8 +182,11 @@ game = Tetris(20, 10)
 counter = 0
 pressing_down = False
 
-pygame.mixer.music.load("../music/tetris-gameboy-02.mp3")
-pygame.mixer.music.play(loops=-1)
+# check if argument to not play music
+if len(sys.argv) <= 1:
+    pygame.mixer.music.load("../music/tetris-gameboy-02.mp3")
+    pygame.mixer.music.play(loops=-1)
+    
 while running:
     if game.piece is None:
         game.new_piece()
